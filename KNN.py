@@ -60,7 +60,7 @@ X_train = X[:410].values
 y_train = y[:410].values
 X_test = X[410:].values
 y_test_real = y[410:].values
-k = 5
+k = 2
 
 # Resultados
 exactitud = prediccion(X_train, y_train, X_test, y_test_real, k)
