@@ -1,7 +1,9 @@
 import pandas as pd
 import numpy as np
+from sklearn.metrics import classification_report
 
-# Cálculo de la distancia euclidiana entre dos puntos
+"""Cálculo fórmula Euclidiana"""
+#Se utiliza para saber la distancia entre los puntos 
 def FormulaEuclidiana(p1, p2):
     distancia = 0
     # Calcular la suma de las diferencias al cuadrado de cada dimensión
@@ -10,7 +12,8 @@ def FormulaEuclidiana(p1, p2):
     # Calcular la raíz cuadrada de la suma para obtener la distancia euclidiana
     return np.sqrt(distancia)
 
-# Algoritmo K-Nearest Neighbors (KNN)
+"""Algoritmo K-Nearest Neighbors (KNN)"""
+#Funcion KNN donde recibe valores de entrenamiento, prueba, punto y valor de k
 def knn(X_train, y_train, nuevo_punto, k):
     distancias = []
     
@@ -35,7 +38,7 @@ def knn(X_train, y_train, nuevo_punto, k):
     clase_predicha = max(clases, key=clases.get)
     return clase_predicha
 
-# Función para calcular las predicciones en un conjunto de prueba
+"""Función para calcular las predicciones en un conjunto de prueba"""
 def prediccion(X_train, y_train, X_test, y_test_real, k):
     predicciones = []
     for i, p in enumerate(X_test):
@@ -45,7 +48,7 @@ def prediccion(X_train, y_train, X_test, y_test_real, k):
         print(f'Valor de prueba: {y_test_real[i]}, Valor predicho: {clase_predicha}')
     return predicciones
 
-# Función para calcular una matriz de confusión detallada
+"""Función para calcular una matriz de confusión detallada"""
 def matriz_confusion_detallada(y_real, y_pred):
     clases_reales = np.unique(y_real)
     n_clases = len(clases_reales)
@@ -56,7 +59,7 @@ def matriz_confusion_detallada(y_real, y_pred):
             matriz[i][j] = np.sum((y_real == clases_reales[i]) & (y_pred == clases_reales[j]))
     return matriz
 
-# Carga de datos y preprocesamiento
+"""Carga de datos y preprocesamiento"""
 datos = pd.read_csv("penguins.csv", header=0)
 y = datos['species']
 # Mapear las etiquetas de clase a valores numéricos
@@ -86,4 +89,8 @@ print(matriz_confusion)
 
 # Calcular la precisión
 exactitud = np.mean(np.array(predicciones) == y_test_real)
-print("\nPrecisión: ", exactitud * 100)
+print("\nPrecisión: \n", exactitud * 100, "\n")
+
+# Mostrar la precision, recall y f1-score
+classification_report_str = classification_report(y_test_real, predicciones)
+print("\n clases:\n ",classification_report_str)
