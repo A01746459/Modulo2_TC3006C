@@ -1,69 +1,89 @@
-# Sebastian Burgos Alanis A01746459
-# Implementación del algoritmo KNN
-# 28/08/23
-
 import pandas as pd
 import numpy as np
 
-# Cálculo de la distancia euclidiana
-def FomrulaEuclidiana(p1, p2):
+# Cálculo de la distancia euclidiana entre dos puntos
+def FormulaEuclidiana(p1, p2):
     distancia = 0
+    # Calcular la suma de las diferencias al cuadrado de cada dimensión
     for i in range(len(p1)):
         distancia += (p1[i] - p2[i]) ** 2
+    # Calcular la raíz cuadrada de la suma para obtener la distancia euclidiana
     return np.sqrt(distancia)
 
-# Algoritmo KNN, recibe parámetros de entrenamiento
+# Algoritmo K-Nearest Neighbors (KNN)
 def knn(X_train, y_train, nuevo_punto, k):
     distancias = []
-    # Calculo de la distancia entre vecinos
+    
+    # Calcular la distancia entre el nuevo punto y los puntos de entrenamiento
     for i in range(len(X_train)):
-        dist = FomrulaEuclidiana(nuevo_punto, X_train[i])
+        dist = FormulaEuclidiana(nuevo_punto, X_train[i])
         distancias.append((dist, y_train[i]))
-    # Ordenar las distancias y guardar los puntos más cercanos
+    
+    # Ordenar las distancias y seleccionar los k vecinos más cercanos
     distancias.sort(key=lambda x: x[0])
     vecinos = distancias[:k]
-    # Contar los vecinos
+    
+    # Contar las ocurrencias de cada clase entre los vecinos
     clases = {}
     for distancia, f in vecinos:
         if f in clases:
             clases[f] += 1
         else:
             clases[f] = 1
-    # Encontrar valores comunes y formar la predicción
+    
+    # Elegir la clase más común entre los vecinos como predicción
     clase_predicha = max(clases, key=clases.get)
-    # Mostrar la prediccion 
-    print(f"prediccion: {clase_predicha}")
     return clase_predicha
 
-# Calculo de la predicción del modelo
+# Función para calcular las predicciones en un conjunto de prueba
 def prediccion(X_train, y_train, X_test, y_test_real, k):
     predicciones = []
-    for p in X_test:
+    for i, p in enumerate(X_test):
         clase_predicha = knn(X_train, y_train, p, k)
         predicciones.append(clase_predicha)
-    # Calcular la precisión comparando las predicciones con las etiquetas reales
-    exactitud = np.mean(np.array(predicciones) == y_test_real)
-    return exactitud
+        # Imprimir el valor real y el valor predicho para cada punto de prueba
+        print(f'Valor de prueba: {y_test_real[i]}, Valor predicho: {clase_predicha}')
+    return predicciones
 
-# Limpieza de datos
+# Función para calcular una matriz de confusión detallada
+def matriz_confusion_detallada(y_real, y_pred):
+    clases_reales = np.unique(y_real)
+    n_clases = len(clases_reales)
+    matriz = np.zeros((n_clases, n_clases))
+    for i in range(n_clases):
+        for j in range(n_clases):
+            # Calcular la cantidad de instancias donde el valor real y el valor predicho coinciden
+            matriz[i][j] = np.sum((y_real == clases_reales[i]) & (y_pred == clases_reales[j]))
+    return matriz
+
+# Carga de datos y preprocesamiento
 datos = pd.read_csv("penguins.csv", header=0)
 y = datos['species']
+# Mapear las etiquetas de clase a valores numéricos
 diccionario = {'Adelie': 1, 'Gentoo': 2, 'Chinstrap': 3}
 y = y.map(diccionario)
+# Eliminar algunas instancias específicas del conjunto de datos
 y = y.drop([4, 272, 340, 618])
 r = y
 X = datos[['bill_length_mm', 'bill_depth_mm', 'flipper_length_mm', 'body_mass_g']]
+# Eliminar filas con valores faltantes
 X = X.dropna()
 
-# Estos fueron los valores que más se acercaron al 100%
-X_train = X[:410].values
-y_train = y[:410].values
-X_test = X[410:].values
-y_test_real = y[410:].values
+# División de datos en conjuntos de entrenamiento y prueba
+X_train = X[:510].values
+y_train = y[:510].values
+X_test = X[510:].values
+y_test_real = y[510:].values
 k = 2
 
-# Resultados
-exactitud = prediccion(X_train, y_train, X_test, y_test_real, k)
-print("Precisión: ", exactitud * 100)
-#se muestra la última prediccion de la base de datos
-#print(f'prediccion para {X_test[-1]} = {knn(X_train, y_train, X_test[-1], k)}')
+# Realizar predicciones
+predicciones = prediccion(X_train, y_train, X_test, y_test_real, k)
+
+# Calcular y mostrar la matriz de confusión detallada
+matriz_confusion = matriz_confusion_detallada(y_test_real, predicciones)
+print("\nMatriz de Confusión Detallada:")
+print(matriz_confusion)
+
+# Calcular la precisión
+exactitud = np.mean(np.array(predicciones) == y_test_real)
+print("\nPrecisión: ", exactitud * 100)
